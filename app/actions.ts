@@ -5,8 +5,6 @@ import { prisma } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function searchProductsAction(query: string) {
   return searchProducts(query)
 }
@@ -260,6 +258,7 @@ export async function createOrder(data: any) {
     })
 
     if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY)
       const { data: resendData, error: resendError } = await resend.emails.send({
         from: 'Vyna Boutique <contact@vyynaa.com>',
         to: 'attoufanemaiga60@gmail.com', // To the admin
