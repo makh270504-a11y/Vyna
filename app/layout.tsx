@@ -6,6 +6,7 @@ import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { Toaster } from '@/components/ui/sonner'
 import { ChatWidget } from '@/components/chatbot/chat-widget'
+import { headers } from 'next/headers'
 import './globals.css'
 
 const inter = Inter({
@@ -33,19 +34,24 @@ export const viewport: Viewport = {
   themeColor: '#f7f4ee',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const headersList = await headers()
+  const isComingSoon = headersList.get('x-coming-soon') === 'true'
+
   return (
     <html lang="fr" className={`${inter.variable} ${cormorant.variable} bg-background`}>
       <body className="font-sans antialiased">
         <CartProvider>
-          <SiteHeader />
-          <main className="min-h-screen">{children}</main>
-          <SiteFooter />
-          <ChatWidget />
+          {!isComingSoon && <SiteHeader />}
+          <main className={isComingSoon ? "min-h-screen flex flex-col" : "min-h-screen"}>
+            {children}
+          </main>
+          {!isComingSoon && <SiteFooter />}
+          {!isComingSoon && <ChatWidget />}
         </CartProvider>
         <Toaster position="top-center" />
         {process.env.NODE_ENV === 'production' && <Analytics />}

@@ -239,11 +239,12 @@ export async function saveShippingRule(id: string | null, data: { name: string; 
 
 export async function createOrder(data: any) {
   try {
-    const { items, ...orderData } = data
+    const { items, paymentMethod = 'COD', ...orderData } = data
 
     const order = await prisma.order.create({
       data: {
         ...orderData,
+        paymentMethod,
         items: {
           create: items.map((item: any) => ({
             productId: item.id,
@@ -257,17 +258,25 @@ export async function createOrder(data: any) {
       }
     })
 
+    const paymentLabels: Record<string, string> = {
+      WAVE: '📲 Wave',
+      ORANGE_MONEY: '🔶 Orange Money',
+      COD: '💵 Paiement à la livraison',
+    }
+    const paymentLabel = paymentLabels[paymentMethod] || paymentMethod
+
     if (process.env.RESEND_API_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY)
-      const { data: resendData, error: resendError } = await resend.emails.send({
+      await resend.emails.send({
         from: 'Vyna Boutique <contact@vyynaa.com>',
-        to: 'attoufanemaiga60@gmail.com', // To the admin
+        to: 'attoufanemaiga60@gmail.com',
         subject: `Nouvelle commande ! - ${order.firstName} ${order.lastName}`,
         html: `
           <h1>Nouvelle commande de ${order.firstName} ${order.lastName}</h1>
           <p><strong>Email :</strong> ${order.email}</p>
           <p><strong>Téléphone :</strong> ${order.phone}</p>
           <p><strong>Total :</strong> ${order.subtotal} FCFA</p>
+          <p><strong>Paiement :</strong> ${paymentLabel}</p>
           <br/>
           <h2>Détails de livraison</h2>
           <p>${order.address}<br/>${order.city}, ${order.country}</p>
@@ -275,17 +284,12 @@ export async function createOrder(data: any) {
           <p>Connectez-vous à l'administration pour voir les détails de la commande.</p>
         `
       })
-      
-      if (resendError) {
-        console.error('Erreur d\'envoi Resend:', resendError)
-        // We do not throw so the order is still saved, but we log it.
-      }
     } else {
       console.warn("ATTENTION: RESEND_API_KEY est introuvable. L'e-mail n'a pas été envoyé.")
     }
 
     revalidatePath('/admin/commandes')
-    return { success: true }
+    return { success: true, orderId: order.id }
   } catch (err) {
     console.error('Error creating order:', err)
     return { error: 'Erreur lors de la création de la commande.' }

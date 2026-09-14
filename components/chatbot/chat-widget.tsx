@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false)
   const [localInput, setLocalInput] = useState('')
-  const { messages, append, isLoading } = useChat({
+  const { messages, sendMessage, status } = useChat({
     api: '/api/chat',
     initialMessages: [
       {
@@ -20,6 +20,8 @@ export function ChatWidget() {
       }
     ]
   })
+  
+  const isLoading = status === 'streaming'
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -123,7 +125,7 @@ export function ChatWidget() {
           onSubmit={(e) => {
             e.preventDefault()
             if (!localInput.trim() || isLoading) return
-            append({ role: 'user', content: localInput })
+            sendMessage({ role: 'user', content: localInput })
             setLocalInput('')
           }}
           className="flex items-center gap-2"

@@ -38,6 +38,7 @@ export function CheckoutForm() {
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedCountry, setSelectedCountry] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<string>('')
   const { subtotal, items, clear } = useCart()
   
   const [formData, setFormData] = useState({
@@ -219,25 +220,93 @@ export function CheckoutForm() {
 
           {currentStep === 3 && (
             <div className="flex flex-col gap-6">
-              <h3 className="font-medium">Paiement sécurisé</h3>
-              <div className="rounded-lg border p-8 text-center text-muted-foreground">
-                <p>Intégration Stripe / Paiement à venir.</p>
+              <h3 className="font-medium">Méthode de paiement</h3>
+
+              {/* Payment options */}
+              <div className="flex flex-col gap-3">
+                {[
+                  {
+                    id: 'WAVE',
+                    label: 'Wave',
+                    description: 'Paiement mobile Wave – rapide et sécurisé',
+                    emoji: '🌊',
+                    color: 'bg-sky-50 border-sky-200',
+                    activeColor: 'bg-sky-100 border-sky-500',
+                  },
+                  {
+                    id: 'ORANGE_MONEY',
+                    label: 'Orange Money',
+                    description: 'Paiement Orange Money – disponible dans toute l\'Afrique',
+                    emoji: '🟠',
+                    color: 'bg-orange-50 border-orange-200',
+                    activeColor: 'bg-orange-100 border-orange-500',
+                  },
+                  {
+                    id: 'MTN',
+                    label: 'MTN Mobile Money',
+                    description: 'Paiement MTN MoMo – Ghana, Côte d\'Ivoire, etc.',
+                    emoji: '💛',
+                    color: 'bg-yellow-50 border-yellow-200',
+                    activeColor: 'bg-yellow-100 border-yellow-500',
+                  },
+                  {
+                    id: 'COD',
+                    label: 'Paiement à la livraison',
+                    description: 'Payez en espèces à la réception de votre commande',
+                    emoji: '💵',
+                    color: 'bg-green-50 border-green-200',
+                    activeColor: 'bg-green-100 border-green-500',
+                  },
+                ].map((method) => (
+                  <button
+                    key={method.id}
+                    type="button"
+                    onClick={() => setPaymentMethod(method.id)}
+                    className={`flex items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${
+                      paymentMethod === method.id ? method.activeColor : method.color + ' hover:opacity-90'
+                    }`}
+                  >
+                    <span className="text-3xl">{method.emoji}</span>
+                    <div className="flex-1">
+                      <div className="font-semibold text-foreground">{method.label}</div>
+                      <div className="text-sm text-muted-foreground">{method.description}</div>
+                    </div>
+                    <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
+                      paymentMethod === method.id ? 'border-foreground' : 'border-muted-foreground'
+                    }`}>
+                      {paymentMethod === method.id && (
+                        <div className="h-2.5 w-2.5 rounded-full bg-foreground" />
+                      )}
+                    </div>
+                  </button>
+                ))}
               </div>
-              
+
+              {/* CinetPay notice for mobile payments */}
+              {paymentMethod !== 'COD' && (
+                <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground mb-1">🔒 Paiement sécurisé via CinetPay</p>
+                  <p>Vous serez redirigé vers la plateforme CinetPay pour finaliser votre paiement en toute sécurité. Votre commande sera confirmée automatiquement après réception du paiement.</p>
+                </div>
+              )}
+
               <div className="mt-4 flex gap-4">
                 <Button variant="outline" onClick={() => setCurrentStep(2)} disabled={isSubmitting}>Retour</Button>
-                <Button 
+                <Button
                   className="w-full sm:w-auto"
+                  disabled={isSubmitting || !paymentMethod}
                   onClick={async () => {
                     setIsSubmitting(true)
-                    
+
                     const countryName = COUNTRIES.find(c => c.code === selectedCountry)?.name || selectedCountry
 
+                    // 1. Créer la commande en base
                     const orderResult = await createOrder({
                       ...formData,
                       country: countryName,
                       subtotal: subtotal,
-                      items: items
+                      items: items,
+                      paymentMethod,
                     })
 
                     setIsSubmitting(false)
@@ -247,14 +316,46 @@ export function CheckoutForm() {
                       return
                     }
 
-                    clear()
-                    toast.success("Commande confirmée avec succès !")
-                    router.push('/')
+                    // 2. Redirection selon le mode de paiement
+                    if (paymentMethod === 'COD') {
+                      // Paiement à la livraison : commande créée, on redirige
+                      clear()
+                      toast.success('Commande confirmée ! Nous vous contacterons pour la livraison.')
+                      router.push('/')
+                    } else {
+                      // Paiement mobile : initier CinetPay
+                      setIsSubmitting(true)
+                      try {
+                        const cinetpayRes = await fetch('/api/cinetpay/initiate', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            orderId: orderResult.orderId,
+                            amount: subtotal,
+                            customerName: `${formData.firstName} ${formData.lastName}`,
+                            customerEmail: formData.email,
+                            customerPhone: formData.phone,
+                          }),
+                        })
+                        const cinetpayData = await cinetpayRes.json()
+
+                        if (cinetpayData.payment_url) {
+                          clear()
+                          // Redirection vers la page de paiement CinetPay
+                          window.location.href = cinetpayData.payment_url
+                        } else {
+                          toast.error(cinetpayData.error || 'Impossible d\'initier le paiement CinetPay.')
+                          setIsSubmitting(false)
+                        }
+                      } catch {
+                        toast.error('Erreur de connexion. Réessayez.')
+                        setIsSubmitting(false)
+                      }
+                    }
                   }}
-                  disabled={isSubmitting}
                 >
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Confirmer la commande
+                  {paymentMethod === 'COD' ? 'Confirmer la commande' : 'Payer maintenant →'}
                 </Button>
               </div>
             </div>

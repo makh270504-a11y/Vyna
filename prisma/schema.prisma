@@ -107,20 +107,23 @@ model Review {
 // ---------------------------------------------------------------------------
 
 model Order {
-  id          String      @id @default(cuid())
-  status      OrderStatus @default(PENDING)
-  firstName   String
-  lastName    String
-  email       String
-  phone       String
-  country     String
-  city        String
-  address     String
-  complement  String?
-  items       OrderItem[]
-  subtotal    Int
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id                    String        @id @default(cuid())
+  status                OrderStatus   @default(PENDING)
+  paymentMethod         PaymentMethod @default(COD)
+  paymentProofUrl       String?       // Screenshot URL for manual payment proof
+  paymentTransactionId  String?       // CinetPay transaction ID for webhook matching
+  firstName       String
+  lastName        String
+  email           String
+  phone           String
+  country         String
+  city            String
+  address         String
+  complement      String?
+  items           OrderItem[]
+  subtotal        Int
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@map("orders")
 }
@@ -146,6 +149,12 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+enum PaymentMethod {
+  WAVE
+  ORANGE_MONEY
+  COD
 }
 
 // ---------------------------------------------------------------------------
