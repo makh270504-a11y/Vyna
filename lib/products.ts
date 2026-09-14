@@ -102,8 +102,9 @@ export async function getNewProducts(): Promise<Product[]> {
 export async function getFeaturedProducts(): Promise<Product[]> {
   // Par exemple, les 4 produits spécifiques ou les plus récents
   const products = await prisma.product.findMany({
-    where: {
-      slug: { in: ['savon-noir', 'bracelet-elegance', 'mascara-volume', 'huile-de-soin'] }
+    take: 4,
+    orderBy: {
+      createdAt: 'desc'
     },
     include: productInclude,
   })

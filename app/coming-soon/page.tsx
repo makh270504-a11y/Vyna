@@ -1,4 +1,5 @@
 import React from 'react'
+import { NewsletterForm } from './newsletter-form'
 
 export const metadata = {
   title: 'Vyna — Bientôt disponible',
@@ -23,20 +24,7 @@ export default function ComingSoonPage() {
           <p className="text-sm text-muted-foreground uppercase tracking-widest mb-4">
             Soyez la première informée du lancement
           </p>
-          <form className="flex flex-col sm:flex-row max-w-md mx-auto gap-3">
-            <input 
-              type="email" 
-              placeholder="Votre adresse email" 
-              className="flex-1 px-5 py-3 rounded-full border border-border bg-card focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm transition-all shadow-sm"
-              required
-            />
-            <button 
-              type="submit" 
-              className="px-8 py-3 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors text-sm shadow-md"
-            >
-              M'inscrire
-            </button>
-          </form>
+          <NewsletterForm />
         </div>
         
         <div className="pt-24 text-muted-foreground text-sm font-light">
