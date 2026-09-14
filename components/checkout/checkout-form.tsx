@@ -228,7 +228,7 @@ export function CheckoutForm() {
                   {
                     id: 'WAVE',
                     label: 'Wave',
-                    description: 'Paiement mobile Wave – rapide et sécurisé',
+                    description: 'Paiement manuel via Wave',
                     emoji: '🌊',
                     color: 'bg-sky-50 border-sky-200',
                     activeColor: 'bg-sky-100 border-sky-500',
@@ -236,7 +236,7 @@ export function CheckoutForm() {
                   {
                     id: 'ORANGE_MONEY',
                     label: 'Orange Money',
-                    description: 'Paiement Orange Money – disponible dans toute l\'Afrique',
+                    description: 'Paiement manuel via Orange Money',
                     emoji: '🟠',
                     color: 'bg-orange-50 border-orange-200',
                     activeColor: 'bg-orange-100 border-orange-500',
@@ -244,7 +244,7 @@ export function CheckoutForm() {
                   {
                     id: 'MTN',
                     label: 'MTN Mobile Money',
-                    description: 'Paiement MTN MoMo – Ghana, Côte d\'Ivoire, etc.',
+                    description: 'Paiement manuel via MTN MoMo',
                     emoji: '💛',
                     color: 'bg-yellow-50 border-yellow-200',
                     activeColor: 'bg-yellow-100 border-yellow-500',
@@ -282,11 +282,18 @@ export function CheckoutForm() {
                 ))}
               </div>
 
-              {/* CinetPay notice for mobile payments */}
-              {paymentMethod !== 'COD' && (
-                <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
-                  <p className="font-medium text-foreground mb-1">🔒 Paiement sécurisé via CinetPay</p>
-                  <p>Vous serez redirigé vers la plateforme CinetPay pour finaliser votre paiement en toute sécurité. Votre commande sera confirmée automatiquement après réception du paiement.</p>
+              {/* Instructions de paiement manuel */}
+              {(paymentMethod === 'WAVE' || paymentMethod === 'ORANGE_MONEY' || paymentMethod === 'MTN') && (
+                <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 text-sm text-orange-900">
+                  <p className="font-semibold mb-1">📱 Instruction de paiement manuel</p>
+                  <p>
+                    Veuillez envoyer le montant de <strong>{formatPrice(subtotal)}</strong> au numéro suivant : <br/>
+                    <span className="text-lg font-bold tracking-wider block mt-1">+223 94 02 81 74</span>
+                  </p>
+                  <p className="mt-2 text-xs">
+                    (Compte au nom de Aminata Keïta). <br/>
+                    Cliquez sur <strong>"Confirmer la commande"</strong> après avoir fait le dépôt. Nous validerons votre commande dès réception du transfert.
+                  </p>
                 </div>
               )}
 
@@ -316,46 +323,15 @@ export function CheckoutForm() {
                       return
                     }
 
-                    // 2. Redirection selon le mode de paiement
-                    if (paymentMethod === 'COD') {
-                      // Paiement à la livraison : commande créée, on redirige
-                      clear()
-                      toast.success('Commande confirmée ! Nous vous contacterons pour la livraison.')
-                      router.push('/')
-                    } else {
-                      // Paiement mobile : initier CinetPay
-                      setIsSubmitting(true)
-                      try {
-                        const cinetpayRes = await fetch('/api/cinetpay/initiate', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            orderId: orderResult.orderId,
-                            amount: subtotal,
-                            customerName: `${formData.firstName} ${formData.lastName}`,
-                            customerEmail: formData.email,
-                            customerPhone: formData.phone,
-                          }),
-                        })
-                        const cinetpayData = await cinetpayRes.json()
-
-                        if (cinetpayData.payment_url) {
-                          clear()
-                          // Redirection vers la page de paiement CinetPay
-                          window.location.href = cinetpayData.payment_url
-                        } else {
-                          toast.error(cinetpayData.error || 'Impossible d\'initier le paiement CinetPay.')
-                          setIsSubmitting(false)
-                        }
-                      } catch {
-                        toast.error('Erreur de connexion. Réessayez.')
-                        setIsSubmitting(false)
-                      }
-                    }
+                    // 2. Redirection (Paiement manuel direct)
+                    clear()
+                    toast.success('Commande confirmée avec succès ! Nous la traiterons très vite.')
+                    router.push('/')
                   }}
                 >
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {paymentMethod === 'COD' ? 'Confirmer la commande' : 'Payer maintenant →'}
+                  Confirmer la commande
+
                 </Button>
               </div>
             </div>
