@@ -230,6 +230,7 @@ export function CheckoutForm() {
                     label: 'Wave',
                     description: 'Paiement manuel via Wave',
                     emoji: '🌊',
+                    image: '/images/wave-logo.png',
                     color: 'bg-sky-50 border-sky-200',
                     activeColor: 'bg-sky-100 border-sky-500',
                   },
@@ -238,24 +239,9 @@ export function CheckoutForm() {
                     label: 'Orange Money',
                     description: 'Paiement manuel via Orange Money',
                     emoji: '🟠',
+                    image: '/images/orange-money-logo.png',
                     color: 'bg-orange-50 border-orange-200',
                     activeColor: 'bg-orange-100 border-orange-500',
-                  },
-                  {
-                    id: 'MTN',
-                    label: 'MTN Mobile Money',
-                    description: 'Paiement manuel via MTN MoMo',
-                    emoji: '💛',
-                    color: 'bg-yellow-50 border-yellow-200',
-                    activeColor: 'bg-yellow-100 border-yellow-500',
-                  },
-                  {
-                    id: 'COD',
-                    label: 'Paiement à la livraison',
-                    description: 'Payez en espèces à la réception de votre commande',
-                    emoji: '💵',
-                    color: 'bg-green-50 border-green-200',
-                    activeColor: 'bg-green-100 border-green-500',
                   },
                 ].map((method) => (
                   <button
@@ -266,7 +252,13 @@ export function CheckoutForm() {
                       paymentMethod === method.id ? method.activeColor : method.color + ' hover:opacity-90'
                     }`}
                   >
-                    <span className="text-3xl">{method.emoji}</span>
+                    {method.image ? (
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded bg-white border border-black/5 p-1.5 shadow-sm">
+                        <img src={method.image} alt={method.label} className="h-full w-full object-contain" />
+                      </div>
+                    ) : (
+                      <span className="text-3xl">{method.emoji}</span>
+                    )}
                     <div className="flex-1">
                       <div className="font-semibold text-foreground">{method.label}</div>
                       <div className="text-sm text-muted-foreground">{method.description}</div>
@@ -283,7 +275,7 @@ export function CheckoutForm() {
               </div>
 
               {/* Instructions de paiement manuel */}
-              {(paymentMethod === 'WAVE' || paymentMethod === 'ORANGE_MONEY' || paymentMethod === 'MTN') && (
+              {(paymentMethod === 'WAVE' || paymentMethod === 'ORANGE_MONEY') && (
                 <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 text-sm text-orange-900">
                   <p className="font-semibold mb-1">📱 Instruction de paiement manuel</p>
                   <p>

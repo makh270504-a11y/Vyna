@@ -9,18 +9,13 @@ const items = [
   },
   {
     icon: Truck,
-    title: 'Livraison rapide',
-    text: 'Dakar & Abidjan',
+    title: 'Livraison',
+    text: 'Partout dans le monde',
   },
   {
     icon: Lock,
     title: 'Paiement sécurisé',
     text: '100% sécurisé',
-  },
-  {
-    icon: Heart,
-    title: 'Satisfait ou remboursé',
-    text: "14 jours pour changer d'avis",
   },
 ]
 
@@ -28,7 +23,7 @@ export function TrustBar() {
   return (
     <section className="relative z-30 mt-4 mb-16 px-4 md:-mt-16">
       <div className="mx-auto max-w-6xl rounded-2xl bg-white px-6 py-8 shadow-sm">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4 lg:gap-x-12">
+        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-3 lg:gap-x-12">
           {items.map((item, i) => (
             <Reveal key={item.title} delay={i * 70} className="flex items-center gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center text-primary">
