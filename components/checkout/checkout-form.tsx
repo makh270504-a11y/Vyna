@@ -208,7 +208,7 @@ export function CheckoutForm() {
                   </div>
                   <span className="font-medium">Gratuit</span>
                 </div>
-                <p className="pl-7 text-sm text-muted-foreground">3 à 5 jours ouvrés.</p>
+                <p className="pl-7 text-sm text-muted-foreground">Délai de livraison : 10 jours.</p>
               </div>
 
               <div className="mt-4 flex gap-4">

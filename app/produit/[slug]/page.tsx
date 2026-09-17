@@ -169,7 +169,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   <span className="mt-0.5">📦</span>
                   <div>
                     <h4 className="font-medium text-foreground">Livraison standard</h4>
-                    <p className="text-sm">Expédition sous 24h, livraison en 3-5 jours ouvrables.</p>
+                    <p className="text-sm">Expédition rapide, livraison estimée sous 10 jours.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -182,8 +182,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <div className="flex items-start gap-3">
                   <span className="mt-0.5">↩️</span>
                   <div>
-                    <h4 className="font-medium text-foreground">Retours gratuits</h4>
-                    <p className="text-sm">Vous avez 14 jours pour retourner le produit s'il ne vous convient pas.</p>
+                    <h4 className="font-medium text-foreground">Retours</h4>
+                    <p className="text-sm">Si votre article présente un défaut de fabrication, contactez-nous pour un échange ou un remboursement.</p>
                   </div>
                 </div>
               </div>
