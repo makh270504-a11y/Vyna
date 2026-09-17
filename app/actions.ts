@@ -89,6 +89,46 @@ export async function deleteReview(reviewId: string) {
 
 export async function updateOrderStatus(orderId: string, status: 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED') {
   try {
+    const oldOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: true }
+    })
+
+    if (oldOrder && oldOrder.status !== 'CANCELLED' && status === 'CANCELLED') {
+      // Restock items
+      for (const item of oldOrder.items) {
+        if (item.productId) {
+          const product = await prisma.product.findUnique({ where: { id: item.productId } })
+          if (product) {
+            await prisma.product.update({
+              where: { id: item.productId },
+              data: {
+                stock: product.stock + item.quantity,
+                inStock: true
+              }
+            })
+          }
+        }
+      }
+    } else if (oldOrder && oldOrder.status === 'CANCELLED' && status !== 'CANCELLED') {
+      // Deduct stock again if un-cancelled
+      for (const item of oldOrder.items) {
+        if (item.productId) {
+          const product = await prisma.product.findUnique({ where: { id: item.productId } })
+          if (product) {
+            const newStock = Math.max(0, product.stock - item.quantity)
+            await prisma.product.update({
+              where: { id: item.productId },
+              data: {
+                stock: newStock,
+                inStock: newStock > 0
+              }
+            })
+          }
+        }
+      }
+    }
+
     await prisma.order.update({
       where: { id: orderId },
       data: { status }
@@ -257,6 +297,23 @@ export async function createOrder(data: any) {
         }
       }
     })
+
+    // Déduction des stocks
+    for (const item of items) {
+      if (item.id) {
+        const product = await prisma.product.findUnique({ where: { id: item.id } })
+        if (product) {
+          const newStock = Math.max(0, product.stock - item.quantity)
+          await prisma.product.update({
+            where: { id: item.id },
+            data: {
+              stock: newStock,
+              inStock: newStock > 0
+            }
+          })
+        }
+      }
+    }
 
     const paymentLabels: Record<string, string> = {
       WAVE: '📲 Wave',
