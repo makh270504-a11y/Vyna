@@ -6,6 +6,7 @@ import { ChevronLeft, MapPin, User, Package, Calendar } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { OrderStatusUpdater } from '@/components/admin/order-status-updater'
+import { DeleteOrderButton } from '@/components/admin/delete-order-button'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/format'
 
@@ -49,7 +50,10 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
           {order.status === 'CANCELLED' && <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Annulée</Badge>}
         </div>
         
-        <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
+        <div className="flex items-center gap-2">
+          <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
+          <DeleteOrderButton orderId={order.id} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

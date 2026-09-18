@@ -283,8 +283,9 @@ export function CheckoutForm() {
                     <span className="text-lg font-bold tracking-wider block mt-1">+223 94 02 81 74</span>
                   </p>
                   <p className="mt-2 text-xs">
-                    (Compte au nom de Aminata Keïta). <br/>
-                    Cliquez sur <strong>"Confirmer la commande"</strong> après avoir fait le dépôt. Nous validerons votre commande dès réception du transfert.
+                    (Compte au nom de Aminata Keïta). <br/><br/>
+                    <strong className="text-red-700 font-bold">⚠️ TRÈS IMPORTANT :</strong> Le numéro utilisé pour le paiement <strong>doit obligatoirement être le même</strong> que le numéro de téléphone renseigné dans votre commande. Sans cela, nous ne pourrons pas valider votre paiement.<br/><br/>
+                    Cliquez sur <strong>"Confirmer la commande"</strong> après avoir fait le dépôt.
                   </p>
                 </div>
               )}

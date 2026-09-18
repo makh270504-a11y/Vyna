@@ -144,6 +144,43 @@ export async function updateOrderStatus(orderId: string, status: 'PENDING' | 'CO
   }
 }
 
+export async function deleteOrder(orderId: string) {
+  try {
+    const oldOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: true }
+    })
+
+    if (oldOrder && oldOrder.status !== 'CANCELLED') {
+      // Restock items before deleting if the order wasn't already cancelled
+      for (const item of oldOrder.items) {
+        if (item.productId) {
+          const product = await prisma.product.findUnique({ where: { id: item.productId } })
+          if (product) {
+            await prisma.product.update({
+              where: { id: item.productId },
+              data: {
+                stock: product.stock + item.quantity,
+                inStock: true
+              }
+            })
+          }
+        }
+      }
+    }
+
+    await prisma.order.delete({
+      where: { id: orderId }
+    })
+    
+    revalidatePath('/admin/commandes')
+    return { success: true }
+  } catch (err) {
+    console.error('Error deleting order:', err)
+    return { error: 'Erreur lors de la suppression de la commande.' }
+  }
+}
+
 export async function saveCategory(id: string | null, data: { name: string; slug: string; tagline: string; image: string }) {
   try {
     if (id) {
